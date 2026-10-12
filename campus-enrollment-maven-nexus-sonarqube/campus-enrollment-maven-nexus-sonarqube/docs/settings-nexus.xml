@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Template: Maven resolves ${env.NEXUS_USER} and ${env.NEXUS_PASSWORD} from your shell.
+     Do not commit literal credentials. This example is safe to commit. -->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+  <servers>
+    <server>
+      <id>nexus-snapshots</id>
+      <username>${env.NEXUS_USER}</username>
+      <password>${env.NEXUS_PASSWORD}</password>
+    </server>
+    <server>
+      <id>nexus-releases</id>
+      <username>${env.NEXUS_USER}</username>
+      <password>${env.NEXUS_PASSWORD}</password>
+    </server>
+  </servers>
+</settings>

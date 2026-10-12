@@ -1,0 +1,51 @@
+name: campus-toolchain
+services:
+  nexus:
+    image: sonatype/nexus3:latest
+    container_name: campus-nexus
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    volumes:
+      - nexus_data:/nexus-data
+
+  sonarqube-db:
+    image: postgres:17-alpine
+    container_name: campus-sonar-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sonarqube
+      POSTGRES_USER: sonarqube
+      POSTGRES_PASSWORD: ${SONAR_DB_PASSWORD:?Set SONAR_DB_PASSWORD in infra/.env}
+    volumes:
+      - sonar_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sonarqube -d sonarqube"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: campus-sonarqube
+    restart: unless-stopped
+    depends_on:
+      sonarqube-db:
+        condition: service_healthy
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://sonarqube-db:5432/sonarqube
+      SONAR_JDBC_USERNAME: sonarqube
+      SONAR_JDBC_PASSWORD: ${SONAR_DB_PASSWORD:?Set SONAR_DB_PASSWORD in infra/.env}
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonar_data:/opt/sonarqube/data
+      - sonar_extensions:/opt/sonarqube/extensions
+      - sonar_logs:/opt/sonarqube/logs
+
+volumes:
+  nexus_data:
+  sonar_postgres:
+  sonar_data:
+  sonar_extensions:
+  sonar_logs:

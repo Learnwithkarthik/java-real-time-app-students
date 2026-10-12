@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CampusFlow | Enrollment Console</title>
+<style>
+:root{--bg:#0b1220;--panel:#121e31;--border:#28364c;--text:#f3f7fc;--muted:#a7b7cb;--accent:#57d0ba;--blue:#70a4fc}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(125deg,#0b1220,#17263a);color:var(--text);font:15px system-ui,Arial,sans-serif;min-height:100vh}
+main{max-width:1160px;margin:auto;padding:36px 22px}header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:27px}.logo{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);font-weight:800}
+h1{font-size:clamp(30px,4vw,47px);line-height:1.08;margin:6px 0 7px;letter-spacing:-1.5px}p{color:var(--muted);margin:5px 0 0}.pill{border:1px solid #315450;border-radius:99px;padding:9px 13px;color:#a5ffe4;white-space:nowrap;font-size:12px;font-weight:750}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:22px}.stat{padding:18px 21px;border-radius:13px;background:#192b3d;border:1px solid #2d4254}.stat b{display:block;font-size:30px;color:#fff}.stat span{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:1.4px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.box{background:var(--panel);border:1px solid var(--border);border-radius:17px;padding:22px;box-shadow:0 8px 28px #040b1830}.box.wide{grid-column:1/-1}h2{font-size:19px;margin:0 0 5px}.desc{font-size:13px;margin:0 0 20px}
+form{display:grid;gap:10px;grid-template-columns:1fr 1fr}input,select{width:100%;border:1px solid #3b4c65;border-radius:9px;background:#0d1828;color:white;font-size:14px;padding:13px;min-width:0}input::placeholder{color:#94a4b8}form input:first-child:nth-last-child(3){grid-column:1/-1}button{background:var(--accent);border:none;border-radius:9px;color:#062724;padding:13px 16px;font-weight:850;cursor:pointer}button:hover{filter:brightness(1.06)}button.secondary{background:#22354a;color:white;border:1px solid #456077;padding:8px 12px}button.danger{background:#503040;color:#ffd9e0;border:1px solid #754653;padding:7px 10px;font-size:12px}
+.items{margin-top:18px;display:grid;gap:9px;max-height:290px;overflow-y:auto}.item{padding:11px 13px;background:#15243a;border:1px solid #283a51;border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:15px}.item strong{display:block;font-size:14px}.item small{color:var(--muted);font-size:12px}.empty{padding:15px;color:var(--muted);border:1px dashed #3a4b5f;border-radius:10px}.badge{padding:4px 8px;background:#223d52;border-radius:30px;font-size:12px;color:#93ceff}
+.banner{margin:0 0 18px;min-height:0}.banner:not(:empty){padding:12px 16px;background:#244a43;color:#b8ffe9;border-radius:10px;border:1px solid #307464}.banner.error{background:#4a2837;color:#ffcfdd;border-color:#95465f}footer{font-size:12px;color:#93a7c0;text-align:center;margin-top:24px}code{color:#93dacf}
+@media(max-width:740px){header{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr}.stats{gap:8px}.stat{padding:14px}.stat b{font-size:23px}form{grid-template-columns:1fr}form input:first-child:nth-last-child(3){grid-column:auto}}
+</style>
+</head>
+<body>
+<main>
+<header><div><div class="logo">DSU Global IT • Java teaching lab</div><h1>CampusFlow <span style="color:var(--accent)">/</span> Enrollment</h1><p>One real Java application • Maven build • Nexus artifact • SonarQube analysis</p></div><div class="pill">● LIVE SPRING BOOT APP</div></header>
+<div id="banner" class="banner" role="status" aria-live="polite"></div>
+<section class="stats"><div class="stat"><b id="studentsCount">—</b><span>Students</span></div><div class="stat"><b id="coursesCount">—</b><span>Courses</span></div><div class="stat"><b id="enrollmentsCount">—</b><span>Enrollments</span></div></section>
+<section class="grid">
+<article class="box"><h2>1. Students</h2><p class="desc">Register a student. Duplicate emails are rejected.</p><form id="studentForm"><input name="name" placeholder="Student name" aria-label="Student name" required maxlength="100"><input name="email" type="email" placeholder="Email address" aria-label="Email address" required maxlength="180"><button type="submit">+ Add student</button></form><div id="students" class="items"></div></article>
+<article class="box"><h2>2. Courses</h2><p class="desc">Create courses, define seats, and enforce capacities.</p><form id="courseForm"><input name="code" placeholder="Course code (e.g. ML301)" aria-label="Course code" required maxlength="20"><input name="title" placeholder="Course title" aria-label="Course title" required maxlength="140"><input name="capacity" type="number" min="1" max="500" value="5" aria-label="Capacity" required><button type="submit">+ Add course</button></form><div id="courses" class="items"></div></article>
+<article class="box wide"><h2>3. Enrollments</h2><p class="desc">Assign students to courses. Prevent duplicate registrations and overbooking.</p><form id="enrollmentForm"><select name="studentId" id="studentSelect" aria-label="Select student" required></select><select name="courseId" id="courseSelect" aria-label="Select course" required></select><button type="submit">Enroll student →</button></form><div id="enrollments" class="items"></div></article>
+</section>
+<footer>Application health: <code>/actuator/health</code> &nbsp;·&nbsp; REST APIs: <code>/api/students</code> · <code>/api/courses</code> · <code>/api/enrollments</code></footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const state={students:[],courses:[],enrollments:[]};
+function status(msg,isError=false){const el=$('banner');el.textContent=msg;el.className='banner'+(isError?' error':'');}
+async function api(path,options={}){const response=await fetch('/api/'+path,{headers:{'Content-Type':'application/json'},...options});if(!response.ok){let detail=`HTTP ${response.status}`;try{const data=await response.json();detail=data.details?.join(' · ')||data.error||detail;}catch(_){}throw new Error(detail);}return response.status===204?null:response.json();}
+function item(primary,secondary,right){const d=document.createElement('div');d.className='item';const left=document.createElement('div');const s=document.createElement('strong');s.textContent=primary;const t=document.createElement('small');t.textContent=secondary;left.append(s,t);d.append(left);if(right)d.append(right);return d;}
+function badge(text){const b=document.createElement('span');b.className='badge';b.textContent=text;return b;}
+function fillSelect(id,values,placeholder,display){const el=$(id);const current=el.value;el.replaceChildren();const blank=document.createElement('option');blank.value='';blank.textContent=placeholder;el.append(blank);values.forEach(v=>{const o=document.createElement('option');o.value=v.id;o.textContent=display(v);el.append(o)});if(values.some(v=>String(v.id)===current))el.value=current;}
+function render(){for(const key of ['students','courses','enrollments']){$(key+'Count').textContent=state[key].length;const container=$(key);container.replaceChildren();if(!state[key].length){const e=document.createElement('div');e.className='empty';e.textContent='No '+key+' yet';container.append(e);}}
+state.students.forEach(s=>$('students').append(item(s.name,s.email,badge('#'+s.id))));
+state.courses.forEach(c=>{const used=state.enrollments.filter(e=>e.courseId===c.id).length;$('courses').append(item(c.title,c.code,badge(`${used}/${c.capacity} seats`)));});
+state.enrollments.forEach(e=>{const button=document.createElement('button');button.textContent='Cancel';button.className='danger';button.addEventListener('click',async()=>{try{await api('enrollments/'+e.id,{method:'DELETE'});status('Enrollment canceled');await refresh();}catch(err){status(err.message,true)}});$('enrollments').append(item(`${e.studentName} → ${e.courseCode}`,new Date(e.enrolledAt).toLocaleString(),button));});
+fillSelect('studentSelect',state.students,'Select student',s=>`${s.name} (#${s.id})`);fillSelect('courseSelect',state.courses,'Select course',c=>`${c.code} — ${c.title}`);
+}
+async function refresh(){try{const [students,courses,enrollments]=await Promise.all([api('students'),api('courses'),api('enrollments')]);Object.assign(state,{students,courses,enrollments});render();}catch(e){status('Cannot reach Java API: '+e.message,true);}}
+for(const [formName,endpoint] of [['studentForm','students'],['courseForm','courses'],['enrollmentForm','enrollments']]){$(formName).addEventListener('submit',async event=>{event.preventDefault();const form=event.target;const obj=Object.fromEntries(new FormData(form));if(endpoint==='courses')obj.capacity=Number(obj.capacity);if(endpoint==='enrollments'){obj.studentId=Number(obj.studentId);obj.courseId=Number(obj.courseId)}try{await api(endpoint,{method:'POST',body:JSON.stringify(obj)});status('Success! '+endpoint.slice(0,-1)+' saved.');form.reset();await refresh();}catch(error){status(error.message,true)}});}
+refresh();
+</script>
+</body>
+</html>
